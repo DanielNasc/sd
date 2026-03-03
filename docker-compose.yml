@@ -1,0 +1,32 @@
+services:
+  rpc-server:
+    build:
+      context: ./server
+    container_name: rpc-server
+    environment:
+      RPC_HOST: 0.0.0.0
+      RPC_PORT: 9000
+      DB_PATH: /data/tasks.db
+    volumes:
+      - rpc_data:/data
+    ports:
+      - "9000:9000"
+
+  client-ui:
+    build:
+      context: ./client-ui
+    container_name: client-ui
+    environment:
+      FLASK_SECRET: super-secret-local
+      RPC_SERVER_URL: http://rpc-server:9000
+      RPC_MAX_RETRIES: 3
+      RPC_BASE_BACKOFF: 0.25
+      CB_FAILURE_THRESHOLD: 3
+      CB_RECOVERY_TIMEOUT: 5
+    depends_on:
+      - rpc-server
+    ports:
+      - "8000:8000"
+
+volumes:
+  rpc_data:

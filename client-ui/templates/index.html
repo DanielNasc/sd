@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SD Board Distribuido</title>
+    <style>
+      :root {
+        --bg: #f3f7f4;
+        --card: #ffffff;
+        --accent: #1f6f4a;
+        --muted: #63706a;
+        --danger: #b00020;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: radial-gradient(circle at top, #d8eadf 0%, var(--bg) 45%);
+        color: #1e2521;
+      }
+      .container {
+        max-width: 860px;
+        margin: 32px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 14px;
+        box-shadow: 0 10px 28px rgba(18, 35, 27, 0.1);
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      input[type="text"] {
+        flex: 1;
+        min-width: 240px;
+        border: 1px solid #c6d5cc;
+        border-radius: 10px;
+        padding: 10px;
+      }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        background: var(--accent);
+        color: #fff;
+      }
+      button.secondary {
+        background: #5f7267;
+      }
+      button.delete {
+        background: #7d3131;
+      }
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid #e7ece9;
+        padding: 12px 0;
+      }
+      li:last-child {
+        border-bottom: none;
+      }
+      .done {
+        text-decoration: line-through;
+        color: var(--muted);
+      }
+      .inline {
+        display: inline;
+      }
+      .error {
+        color: var(--danger);
+      }
+      .ok {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Quadro de Tarefas Distribuido</h1>
+        <p class="meta">
+          Cliente: <strong>{{ client_id }}</strong> |
+          Clock Cliente: <strong>{{ client_clock }}</strong> |
+          Clock Servidor: <strong>{{ server_clock }}</strong> |
+          Circuit Breaker: <strong>{{ circuit_state }}</strong>
+        </p>
+
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %} {% if message %}
+        <p class="ok">{{ message }}</p>
+        {% endif %}
+
+        <form method="post" action="/tasks">
+          <input name="title" placeholder="Nova tarefa compartilhada" />
+          <button type="submit">Adicionar</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Tarefas</h2>
+        {% if tasks %}
+        <ul>
+          {% for task in tasks %}
+          <li>
+            <div>
+              <strong class="{{ 'done' if task.done else '' }}">{{ task.title }}</strong>
+              <div class="meta">
+                id={{ task.id }} | done={{ task.done }} | clock={{ task.last_clock }} |
+                por={{ task.updated_by }}
+              </div>
+            </div>
+            <div>
+              <form class="inline" method="post" action="/tasks/{{ task.id }}/toggle">
+                <button class="secondary" type="submit">
+                  {{ 'Reabrir' if task.done else 'Concluir' }}
+                </button>
+              </form>
+              <form class="inline" method="post" action="/tasks/{{ task.id }}/delete">
+                <button class="delete" type="submit">Excluir</button>
+              </form>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>Nenhuma tarefa ainda.</p>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>
